@@ -5,10 +5,18 @@ date: "November 2026"
 format:
   html:
     toc: true
-    theme: cosmo
+    theme: lux
+    ##include-in-header:
+      ##- text: |
+         ## <link rel="stylesheet" href="https://latex.vercel.app/style.css">
 engine: knitr
 filters:
   - webr
+webr:
+  resources:
+    - spotify_small.csv
+  packages: ['dplyr', 'ggplot2']
+output-file: index.html
 ---
 
 ::: {.callout-note}
@@ -268,4 +276,4 @@ While the model holds, there is only a loose correlation between danceability an
 
 ## Overall Conclusion
 
-[Summarize findings from all four parts in a few sentences.]
+Valence is a useful parameter for song analysis and reccomendation algorithms, providing a "happiness" measure on music. Observing a dataset of somewhat random song's valence measures, a non-normal distribution appeared. This distribution was somewhat suprising, as it was not a normal distribution. 
