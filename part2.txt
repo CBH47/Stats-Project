@@ -1,0 +1,49 @@
+Part 2 — Central Limit Theorem Calculations
+
+Population parameters:
+  mu (mean)    = 0.5106
+  sigma (sd)   = 0.2331
+
+
+n = 1: Sample one unit at random
+
+  Formula: Z = (x - mu) / sigma
+
+  Calculation:
+    x = 0.2470
+    Z = (0.2470 - 0.5106) / 0.2331 = -1.1305
+
+  Does a Z-score make sense for a single observation? Yes. A Z-score simply
+  standardizes one value from the population by measuring how many standard
+  deviations it lies from the mean. It does not depend on sample size.
+
+
+n = 10: Sample 10 units and average them
+
+  Formula: X-bar ~ N(mu, sigma / sqrt(n))
+           Z = (X-bar - mu) / (sigma / sqrt(n))
+
+  Calculation:
+    Sample values: 0.247, 0.767, 0.647, 0.186, 0.414, 0.928, 0.286, 0.433, 0.503, 0.383
+    X-bar = 0.4794
+    SE = sigma / sqrt(10) = 0.2331 / 3.1623 = 0.0737
+    Z = (0.4794 - 0.5106) / 0.0737 = -0.4227
+
+  Does a Z-score make sense for the average of 10 observations? Yes. The sample
+  mean X-bar follows N(mu, sigma/sqrt(n)) approximately even when n is modest,
+  so standardizing it by its expected standard error gives a meaningful Z-score.
+
+
+n = 40: Sample 40 units and average them
+
+  Formula: X-bar ~ N(mu, sigma / sqrt(n))
+           Z = (X-bar - mu) / (sigma / sqrt(n))
+
+  Calculation:
+    X-bar = 0.5303
+    SE = sigma / sqrt(40) = 0.2331 / 6.3246 = 0.0369
+    Z = (0.5303 - 0.5106) / 0.0369 = 0.5348
+
+  Is this an unusual value? No. |Z| = 0.5348, which is well below the threshold
+  of 2. A sample mean within 2 standard errors of the population mean is common
+  and expected under the Central Limit Theorem.

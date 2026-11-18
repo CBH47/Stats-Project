@@ -1,0 +1,49 @@
+Part 3 — Sampling Distribution Visualization
+
+Objective: Visualize the sampling distribution of the sample mean and compare it to
+the theoretical predictions from the Central Limit Theorem.
+
+
+Method
+
+  We simulated 10,000 sample means, each computed from a random sample of size n = 40
+  drawn (with replacement) from the population of Spotify song valence scores:
+
+    set.seed(73213712)
+    n <- 40
+    num_samples <- 10000
+    sample_means <- replicate(num_samples, {
+      mean(sample(df$valence, size = n))
+    })
+
+
+Results
+
+  Theoretical predictions:
+    E(X-bar)   = mu          = 0.5106
+    SE(X-bar)  = sigma/sqrt(n) = 0.2331 / sqrt(40) = 0.0369
+
+  Observed from simulation:
+    Mean of sample means = 0.5103
+    SD of sample means   = 0.0366
+
+  The observed mean (0.5103) is extremely close to the population mean (0.5106),
+  confirming that X-bar is an unbiased estimator of mu. The observed standard
+  deviation (0.0366) closely matches the theoretical standard error (0.0369).
+
+  We also computed a single sample mean from n = 40 in Part 2:
+    X-bar_part2 = 0.5303, Z = 0.5348
+
+  This value is plotted as a red vertical line on the sampling distribution histogram
+  (see Figure 1). It falls near the center of the distribution, consistent with its
+  small Z-score of 0.53 — well within one standard error of mu.
+
+
+Discussion
+
+  Despite the underlying population distribution being tent-shaped (not normal), the
+  sampling distribution of X-bar is approximately normal. This demonstrates the Central
+  Limit Theorem: as n increases, the distribution of sample means converges to a normal
+  distribution regardless of the shape of the population. With n = 40, the convergence
+  is already very close — the simulated distribution is symmetric and bell-shaped with
+  mean near mu and standard deviation near sigma/sqrt(n).

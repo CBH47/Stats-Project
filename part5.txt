@@ -1,0 +1,108 @@
+Part 5 — Linear Regression
+
+
+Objective: Investigate whether a song's danceability is linearly related to its valence (musical
+positivity) by fitting a simple linear regression model on a random sample of n = 40 songs.
+
+
+Data
+
+  A random sample of 40 songs was drawn from the population:
+
+    Y-variable (response): valence — musical positiveness [0, 1]
+    X-variable (predictor): danceability — suitability for dancing [0, 1]
+
+    n = 40
+    Mean(valence) = 0.5303, SD(valence) = 0.2131
+    Mean(danceability) = 0.6444, SD(danceability) = 0.1415
+
+
+Regression Model
+
+  We fit the model: valence = beta_0 + beta_1 * danceability + epsilon
+
+  Results from summary(model):
+
+    Coefficient          Estimate   Std. Error   t value   Pr(>|t|)
+    (Intercept)           0.2696      0.1552       1.738     0.0904 .
+    danceability          0.4045      0.2353       1.719     0.0938 .
+
+    Residual standard error: 0.2079 on 38 degrees of freedom
+    Multiple R-squared: 0.0721
+    Adjusted R-squared: 0.0477
+    F-statistic: 2.954 on 1 and 38 DF, p-value: 0.0938
+
+  Regression equation:
+    valence_hat = 0.2696 + 0.4045 * danceability
+
+
+Interpretation of Coefficients
+
+  Intercept (beta_0 = 0.2696): A song with zero danceability is predicted to have a valence
+  of approximately 0.27, indicating low musical positivity. This intercept approaches but does
+  not reach significance at alpha = 0.05 (t = 1.738, p = 0.0904).
+
+  Slope (beta_1 = 0.4045): For each additional unit of danceability, the predicted valence
+  increases by approximately 0.40. This slope approaches significance at alpha = 0.05
+  (t = 1.719, p = 0.0938). The positive direction is consistent with the intuition that more
+  danceable songs tend to be musically more upbeat and positive.
+
+  R-squared (R² = 0.072): About 7.2% of the variation in valence is explained by
+  danceability. While modest, this is substantially higher than the near-zero R² obtained
+  when using track_popularity as a predictor (R² = 0.01). The adjusted R-squared of 0.048
+  accounts for sample size and confirms that danceability provides some explanatory power.
+
+
+Correlation Analysis
+
+  Sample correlation coefficient: r = 0.2686
+  Population correlation coefficient (all songs): rho = 0.3305
+
+  The sample correlation is positive, suggesting that more danceable songs tend to have higher
+  valence in this particular sample. The population correlation confirms a moderate positive
+  linear relationship between danceability and valence at the population level (rho = 0.33).
+
+
+Bootstrap Confidence Interval
+
+  We used bootstrap resampling with B = 10,000 replicates to construct a 90% confidence
+  interval for the correlation coefficient:
+
+    Bootstrap 90% CI: (0.0098, 0.4808)
+
+  The true population correlation (rho = 0.3305) falls inside this confidence interval.
+  This is expected — a correctly constructed 90% confidence interval should contain the
+  true parameter approximately 90% of the time. The lower bound near zero reflects the
+  small sample size (n = 40), which produces substantial uncertainty in estimating the
+  correlation, but the upper bound extends to nearly 0.5, consistent with a moderate
+  positive relationship.
+
+
+Diagnostic Plots
+
+  Four diagnostic plots were examined to check regression assumptions:
+
+  1. Residuals vs Fitted: Checks for non-linearity and unequal error variances (heteroscedasticity).
+     The residuals should show no discernible pattern and be randomly scattered around zero.
+
+  2. Normal Q-Q Plot: Checks whether the residuals are approximately normally distributed.
+     Points should follow a straight diagonal line closely.
+
+  3. Scale-Location: Checks for homoscedasticity (constant variance of errors). The red line
+     should be roughly horizontal with no systematic pattern.
+
+  4. Residuals vs Leverage: Identifies influential observations that may unduly affect the
+     regression fit. Points outside the Cook's distance contours warrant investigation.
+
+  [Insert diagnostic plot image here]
+
+
+Conclusion
+
+  There is a moderate positive linear relationship between danceability and valence (r = 0.27,
+  population rho = 0.33). The slope approaches significance at alpha = 0.05 (p = 0.094), and
+  the model explains about 7% of the variation in musical positivity. This suggests that songs
+  with stronger rhythmic stability and beat consistency tend to be more musically upbeat, which
+  aligns with the nature of dance music genres. While not statistically significant at the
+  conventional level, this relationship is substantially stronger than any found using track
+  popularity as a predictor.

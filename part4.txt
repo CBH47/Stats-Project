@@ -1,0 +1,81 @@
+Part 4 — P-value and Hypothesis Testing
+
+
+Objective: Compare the mean valence scores between two randomly selected groups to determine
+whether there is a statistically significant difference in their population means.
+
+
+Data
+
+  Two random samples were drawn from the population of Spotify song valence scores without
+  replacement:
+
+    Group 1 (n = 30):  mean = 0.5185, sd = 0.2299
+    Group 2 (n = 35):  mean = 0.5071, sd = 0.2274
+
+
+Hypotheses
+
+  Let mu_1 and mu_2 denote the true population mean valence for Group 1 and Group 2,
+  respectively. Since both groups were drawn from the same underlying population of Spotify
+  songs, we test:
+
+    H_0:   mu_1 - mu_2 = 0        (the two groups have equal population means)
+    H_a:   mu_1 - mu_2 != 0       (the two groups have different population means)
+
+
+Two-Sample t-Test
+
+  We use Welch's two-sample t-test, which does not assume equal variances between the
+  two groups.
+
+  Test statistic:
+
+    t = (X-bar_1 - X-bar_2) / sqrt(s_1^2/n_1 + s_2^2/n_2)
+
+  Computation:
+
+    t = (0.5185 - 0.5071) / sqrt(0.2299^2/30 + 0.2274^2/35)
+      = 0.0114 / 0.0569
+      = 0.2015
+
+  Degrees of freedom (Welch-Satterthwaite approximation): df = 61.28
+
+  p-value: 0.841
+
+  Decision: At the alpha = 0.05 significance level, we fail to reject H_0 since
+  p = 0.841 > 0.05. The 95% confidence interval for the difference in means is
+  (-0.1023, 0.1252), which includes zero. There is no statistically significant
+  evidence of a difference between the two groups' mean valence scores. This result
+  is expected since both samples were drawn from the same population.
+
+
+Non-Parametric Test (Wilcoxon Rank-Sum / Mann-Whitney U)
+
+  The Wilcoxon rank-sum test was used as a non-parametric alternative to the t-test.
+  It does not assume normality of either group's distribution.
+
+  Test statistic: W = 533.5
+  p-value: 0.9143
+
+  Decision: At alpha = 0.05, we fail to reject H_0 (p = 0.9143 > 0.05). The conclusion
+  is consistent with the t-test — there is no significant difference between groups.
+
+  Why this test is still appropriate: The Wilcoxon rank-sum test works by ranking all
+  observations from both groups together (from smallest to largest valence), then summing
+  the ranks within each group. Under H_0, the two groups should have similar rank sums.
+  If one group tends to have higher values, its rank sum will be larger. The test evaluates
+  whether the observed difference in rank sums is larger than expected by chance. It does
+  not require any assumption about the shape of the underlying distribution, making it
+  robust even when normality is violated.
+
+
+Why a t-test with n = 20 May Not Be Appropriate
+
+  The t-test relies on the assumption that the sampling distribution of the mean is
+  approximately normal. For small samples (n < 30), this approximation depends heavily
+  on the underlying population being roughly normal. Our valence data has a tent-shaped
+  (platykurtic) distribution, not a bell-shaped one. With only n = 20 per group, the
+  Central Limit Theorem may not have taken full effect, and the t-test p-value could be
+  unreliable. Larger samples (n >= 30) provide more robustness against deviations from
+  normality, which is why we used groups of size 30 and 35 in this analysis.

@@ -1,0 +1,13 @@
+Shape -
+    - The data is almost completely symmetric, with a very slight left skew of -0.005.
+    - The data is unimodal.
+    - The data is tent-shaped, as it is flatter than a normal distribution, with limits at 0 and 1.
+Outliers -
+    - Using the 1.5×IQR rule: Q1 = 0.331, Q3 = 0.693, IQR = 0.362. Lower fence = Q1 − 1.5(IQR) = −0.212; upper fence = Q3 + 1.5(IQR) = 1.236. Since all valence values fall between 0 and 1, every observation lies within these fences, so there are no outliers.
+Center - 
+    - The mean is 0.510, and the median is 0.512, confirming the symmetry of the distribution.
+    - The songs in this dataset have, on average, a moderate amount of happiness, which is expected
+Spread - 
+    - The moderate standard deviation (σ = 0.2331) and IQR of 0.362 indicate the data is fairly spread across the full [0, 1] range rather than clustering around the center.
+Reflection:
+    - I was surprised that valence is nearly uniform/tent-shaped rather than bell-shaped — I expected most songs to cluster around moderate positivity levels.

@@ -1,0 +1,271 @@
+---
+title: "Statistical Analysis of Spotify Song Valence"
+author: "Campbell Haygood"
+date: "November 2026"
+format:
+  html:
+    toc: true
+    theme: cosmo
+engine: knitr
+filters:
+  - webr
+---
+
+::: {.callout-note}
+This page runs R in your browser, with nothing to install. The first load takes 10 to 30 seconds while R starts. Every code cell is editable: change the code and click **Run Code**. Cells share one R session, so run them from top to bottom, starting with the first one below.
+:::
+
+## Load the data
+
+Expand the block below, and click run. This loads the condensed valence file into an R object. I'd suggest collapsing it once you are done, otherwise it may take a while to scroll to the actual analysis.
+
+::: {.callout-note collapse="true" title="Step 1: load the data (click to expand, then click Run Code)"}
+```{webr}
+{{< include data.R >}}
+```
+:::
+
+```{webr}
+v <- songs$valence
+```
+
+## Introduction
+
+This project analyzes valence scores from a Kaggle dataset of over 30,000 Spotify songs. Valence measures the musical positiveness conveyed by a track, ranging from 0 (most negative) to 1 (most positive); essentially, it measures how happy a song is. This paper analyzes the distribution of valence, tests hypotheses about population means, and investigates relationships between valence and danceability.
+
+## Part 1 — Distribution of Valence
+
+```{webr}
+hist(v, breaks = 30, main = "Histogram of valence", xlab = "Valence")
+```
+
+```{webr}
+boxplot(v, horizontal = TRUE, main = "Boxplot of valence")
+```
+
+```{webr}
+# Base R violin-style plot: mirrored density
+d <- density(v, from = 0, to = 1)
+plot(c(-max(d$y), max(d$y)), c(0, 1), type = "n", yaxt = "n",
+     xlab = "Density", ylab = "Valence", main = "Violin plot of valence")
+axis(2)
+polygon(c(d$y, rev(-d$y)), c(d$x, rev(d$x)), col = "grey80")
+```
+
+Among these three methods, the histogram is the most informative because it shows both the frequency distribution and the shape simultaneously, while the violin plot emphasizes density at different values and the boxplot is compact but has almost no detail about the underlying distribution.
+
+### SOCS Description
+
+**Shape:** The observed distribution is almost entirely symmetric, with only a minor skew to the left (-0.005). The distribution is unimodal and tent-shaped, flatter than a normal distribution due to the range being restricted between $[0, 1]$.
+
+**Outliers:** Using the $1.5 \times \text{IQR}$ rule: $Q_1 = 0.331$, $Q_3 = 0.693$, $\text{IQR} = 0.362$. Lower fence $= Q_1 - 1.5(\text{IQR}) = -0.212$; upper fence $= Q_3 + 1.5(\text{IQR}) = 1.236$. Since all valence values fall between 0 and 1, and the fences are outside those bounds, there are no outliers.
+
+**Center:** The mean is $\bar{x} = 0.510$ and the median is $0.512$, reinforcing the symmetry of the distribution. Songs have a moderate amount of musical positivity on average.
+
+**Spread:** The standard deviation ($s = 0.2331$) and IQR ($0.362$) indicate that valence scores are fairly spread across the full $[0, 1]$ range rather than clustering tightly around the center.
+
+```{webr}
+c(mean = mean(v), median = median(v), sd = sd(v), IQR = IQR(v))
+quantile(v, c(0.25, 0.75))
+```
+
+### Reflection
+
+The nearly uniform/tent-shaped distribution was somewhat surprising. A bell-shaped (normal) distribution was expected with most songs clustering around moderate positivity levels. Instead, valence is relatively evenly distributed across its entire range.
+
+## Part 2 — Central Limit Theorem Calculations
+
+The population parameters for valence are:
+
+$$
+\mu = 0.5106, \quad \sigma = 0.2331
+$$
+
+For each sample size, we draw a random sample and compute the Z-score of the sample mean (or observation):
+
+- $n = 1$: Sample value = 0.2470, $Z = \frac{x - \mu}{\sigma} = -1.1305$
+- $n = 10$: Sample mean = 0.4794, $\bar{X} \sim N(\mu, \sigma/\sqrt{n})$, $Z = -0.4227$
+- $n = 40$: Sample mean = 0.5303, $\bar{X} \sim N(\mu, \sigma/\sqrt{n})$, $Z = 0.5348$
+
+```{webr}
+mu    <- mean(v)
+sigma <- sqrt(mean((v - mean(v))^2))   # population SD
+c(mu = mu, sigma = sigma)
+
+set.seed(73213712)
+for (n in c(1, 10, 40)) {
+  xbar <- mean(sample(v, n))
+  z    <- (xbar - mu) / (sigma / sqrt(n))
+  cat("n =", n, " sample mean =", round(xbar, 4), " Z =", round(z, 4), "\n")
+}
+```
+
+## Part 3 — Sampling Distribution Visualization
+
+We simulate the sampling distribution of the sample mean by drawing 10,000 samples of size $n = 40$:
+
+$$
+\bar{X}_1, \bar{X}_2, \dots, \bar{X}_{10000}, \quad \text{where } \bar{X}_i = \frac{1}{40}\sum_{j=1}^{40} X_{ij}
+$$
+
+The observed statistics are:
+
+$$
+\begin{aligned}
+    \text{Mean of sample means} &= 0.5103 \\
+    \text{SD of sample means}   &= 0.0366 \\
+    \text{Theoretical SE}       &= \sigma/\sqrt{n} = 0.0369
+\end{aligned}
+$$
+
+```{webr}
+set.seed(73213712)
+xbars <- replicate(10000, mean(sample(v, 40)))
+
+hist(xbars, breaks = 40, freq = FALSE,
+     main = "Sampling distribution of the mean (n = 40)", xlab = "Sample mean")
+lines(density(xbars), lwd = 2)
+abline(v = 0.5303, col = "red", lwd = 2)
+
+c(mean_of_means = mean(xbars), sd_of_means = sd(xbars), theoretical_SE = sigma / sqrt(40))
+```
+
+The sampling distribution closely follows a normal curve, consistent with the Central Limit Theorem.
+
+## Part 4 — P-value and Hypothesis Testing
+
+We compare valence scores between two randomly selected groups to test whether their population means differ.
+
+### Data
+
+Two random samples were drawn from the population:
+
+| | Group 1 (n=30) | Group 2 (n=35) |
+|:--------------|:------:|:------:|
+| Mean valence  | 0.5185 | 0.5071 |
+| SD            | 0.2299 | 0.2274 |
+
+### Hypotheses
+
+Let $\mu_1$ and $\mu_2$ denote the true population mean valence for Group 1 and Group 2:
+
+$$
+\begin{aligned}
+    H_0 &: \mu_1 - \mu_2 = 0 \\
+    H_a &: \mu_1 - \mu_2 \neq 0
+\end{aligned}
+$$
+
+### Two-Sample t-Test (Welch)
+
+$$
+t = \frac{\bar{x}_1 - \bar{x}_2}{\sqrt{s_1^2/n_1 + s_2^2/n_2}} = 0.2015
+$$
+
+Degrees of freedom (Welch-Satterthwaite): df = 61.28.
+
+p-value: 0.841.
+
+- At $\alpha = 0.05$, we fail to reject $H_0$ since $p = 0.841 > 0.05$.
+- The 95% confidence interval for the difference in means is $(-0.1023, 0.1252)$, which includes zero.
+
+### Non-Parametric Test (Wilcoxon Rank-Sum)
+
+$$
+W = 533.5, \quad p\text{-value} = 0.9143
+$$
+
+The conclusion is consistent with the t-test: we fail to reject $H_0$.
+
+```{webr}
+set.seed(73213712)
+g1 <- sample(v, 30)
+g2 <- sample(v, 35)
+
+t.test(g1, g2)        # Welch two-sample t-test
+wilcox.test(g1, g2)   # Wilcoxon rank-sum
+```
+
+### Why a t-test with n = 20 May Not Be Appropriate
+
+n = 20 is 2/3 of what is standardly accepted as the minimum amount of data points for a t-test (30). Not only that, but given the non-normality of the dataset, that small amount of data points is doubly invalid.
+
+## Part 5 — Linear Regression
+
+We investigate whether danceability is linearly related to valence using a random sample of $n = 40$ songs.
+
+### Data
+
+| | Valence (Y) | Danceability (X) |
+|:------|:------:|:------:|
+| Mean  | 0.5303 | 0.6444 |
+| SD    | 0.2131 | 0.1415 |
+
+### Regression Model
+
+We fit the model: $\text{valence} = \beta_0 + \beta_1 \cdot \text{danceability} + \epsilon$
+
+| Coefficient  | Estimate | Std. Error | $t$-value | $p$ |
+|:-------------|:--------:|:----------:|:---------:|:------:|
+| Intercept    | 0.2696   | 0.1552     | 1.738     | 0.0904 |
+| Danceability | 0.4045   | 0.2353     | 1.719     | 0.0938 |
+
+$$
+R^2 = 0.0721, \quad F(1, 38) = 2.954, \quad p = 0.0938
+$$
+
+Regression equation: $\widehat{\text{valence}} = 0.2696 + 0.4045 \cdot \text{danceability}$
+
+```{webr}
+set.seed(73213712)
+idx <- sample(nrow(songs), 40)
+s   <- songs[idx, ]
+
+fit <- lm(valence ~ danceability, data = s)
+summary(fit)
+```
+
+### Correlation Analysis
+
+$$
+r_{\text{sample}} = 0.2686, \quad \rho_{\text{population}} = 0.3305
+$$
+
+```{webr}
+c(r_sample = cor(s$valence, s$danceability),
+  rho_population = cor(songs$valence, songs$danceability))
+```
+
+### Bootstrap Confidence Interval
+
+Using $B = 10{,}000$ bootstrap replicates:
+
+$$
+95\%\text{ CI for } \rho: (0.0098, 0.4808)
+$$
+
+The true population correlation is inside the confidence interval.
+
+```{webr}
+boot_r <- replicate(10000, {
+  b <- s[sample(nrow(s), replace = TRUE), ]
+  cor(b$valence, b$danceability)
+})
+quantile(boot_r, c(0.025, 0.975))
+```
+
+### Diagnostic Plots
+
+```{webr}
+par(mfrow = c(2, 2))
+plot(fit)
+par(mfrow = c(1, 1))
+```
+
+### Conclusion
+
+While the model holds, there is only a loose correlation between danceability and valence. A stronger positive relationship might be expected, since happier-sounding songs are often assumed to be more danceable, but taking some anecdotal data points helps to explain. If we take a song like "Fake Plastic Trees" by Radiohead as an example of a sad song, it has a valence of 0.134, so a very sad song, and a danceability of 0.454, matching the assumption. However, there are also data points like "Bury a Friend" by Billie Eilish, which has a valence of 0.196, but a danceability of 0.905. That variability also works at the high end, with songs like "Uptown Funk" by Mark Ronson ft. Bruno Mars (valence 0.928, danceability 0.826) making sense, but "Shotgun (The Wild Remix)" by George Ezra has a valence of 0.836, but a danceability of only 0.588.
+
+## Overall Conclusion
+
+[Summarize findings from all four parts in a few sentences.]
