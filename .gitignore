@@ -1,1 +1,7 @@
 /.kilo
+/summary-explanation-ideas.txt
+/wilcoxon-explanation-ideas.txt
+/clt-questions-ideas.txt
+/.gitignore
+/.quarto/
+**/*.quarto_ipynb

@@ -213,6 +213,16 @@ We investigate whether danceability is linearly related to valence using a rando
 
 We fit the model: $\text{valence} = \beta_0 + \beta_1 \cdot \text{danceability} + \epsilon$
 
+```{webr}
+set.seed(73213712)
+idx <- sample(nrow(songs), 40)
+s   <- songs[idx, ]
+
+fit <- lm(valence ~ danceability, data = s)
+summary(fit)
+```
+
+
 | Coefficient  | Estimate | Std. Error | $t$-value | $p$ |
 |:-------------|:--------:|:----------:|:---------:|:------:|
 | Intercept    | 0.2696   | 0.1552     | 1.738     | 0.0904 |
@@ -222,16 +232,28 @@ $$
 R^2 = 0.0721, \quad F(1, 38) = 2.954, \quad p = 0.0938
 $$
 
-Regression equation: $\widehat{\text{valence}} = 0.2696 + 0.4045 \cdot \text{danceability}$
+
+- Estimate of Intercept: A song with no danceability would be predicted to have a valence of 0.2696
+
+- Estimate of Danceability: The slope of the regression line. For every one unit increase in danceability, valence would be predicted to increase by 0.4
+
+- Std. Err Intercept and Danceability: Shows how much the estimate varies from the true data intercept and slope respectively). The smaller the SE can be made, the more precise the estimate is.
+
+- t-values: Tests the intercept and slope respectively by dividing it by its own standard error. 
+
+- p-values: Determines how close the intercept and slope are to being statistically significant. The p-values mean this data teeters right on the edge of being significant.
+
+- $R^2$: About 7.2% of the variation in valence is explained by the danceability, meaning that variation mainly comes from other factors.
+
+- F-Statistic: Tests how much of the variance is explained by the model beyond a certain amount. With one predictor, it is equivalent to testing if any of the variance is explained at all.
+
 
 ```{webr}
-set.seed(73213712)
-idx <- sample(nrow(songs), 40)
-s   <- songs[idx, ]
-
-fit <- lm(valence ~ danceability, data = s)
-summary(fit)
+plot(s$danceability, s$valence, xlab = "Danceability", ylab = "Valence", pch = 19, col = rgb(0, 0, 0, 0.3))
+abline(fit, lwd = 2, col = "red")
 ```
+
+Regression equation: $\widehat{\text{valence}} = 0.2696 + 0.4045 \cdot \text{danceability}$
 
 ### Correlation Analysis
 
@@ -248,19 +270,17 @@ c(r_sample = cor(s$valence, s$danceability),
 
 Using $B = 10{,}000$ bootstrap replicates:
 
-$$
-95\%\text{ CI for } \rho: (0.0098, 0.4808)
-$$
-
-The true population correlation is inside the confidence interval.
+The bootstrap output below shows the $90\%$ CI for $\rho$.
 
 ```{webr}
 boot_r <- replicate(10000, {
   b <- s[sample(nrow(s), replace = TRUE), ]
   cor(b$valence, b$danceability)
 })
-quantile(boot_r, c(0.025, 0.975))
+quantile(boot_r, c(0.05, 0.95))
 ```
+
+
 
 ### Diagnostic Plots
 
@@ -269,6 +289,18 @@ par(mfrow = c(2, 2))
 plot(fit)
 par(mfrow = c(1, 1))
 ```
+
+The four diagnostic plots check the regression assumptions:
+
+**Residuals vs Fitted:** This graph checks for linearity and constant variance. The points should form a random scattering. A funnel shape would indicate heteroscedasticity; a curve would suggest nonlinearity (fits a quadratic). With this sample, there is no obvious curvature or funneling. The spread of residuals appears somewhat consistent across fitted values, supporting the homoscedasticity assumption.
+
+**Normal Q-Q:** Checks whether residuals follow a normal distribution. Points should closely track the diagonal reference line if the data is normal. Deviations at the ends of the lines indicate non-normally weighted tails; an S-shape indicates skew. The middle portion of this plot follows the line reasonably well, though with only 40 points some minor deviation at the extremes is expected and does not indicate a serious violation.
+
+**Scale-Location:** Another check for constant variance, using the square root of standardized residuals. A flat horizontal dashed line is ideal, because any upward or downward trend indicates that the spread changes. The plot shows no strong trend in the spread of residuals across fitted values, consistent with homoscedasticity.
+
+**Residuals vs Leverage:** Identifies influential observations that could unduly affect the regression fit. Points outside the red contour lines are the most likely to cause issues. Most points cluster near the center of this plot, and no single observation stands out as having disproportionate influence on the fitted line.
+
+Overall, none of the four assumptions appear to be seriously violated. The main limitation is the small sample size (n = 40), which makes it harder to detect subtle violations, but there is no strong evidence against using this linear model for inference.
 
 ### Conclusion
 
