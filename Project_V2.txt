@@ -1,29 +1,15 @@
 ST 370 Simulation Project
-Joe Harrison
+Campbell Haygood
 
-The point of this project will be to investigate statistical concepts with both technology and
-real-world data!
-
-You may collaborate with up to 2 other people. AI can be used for syntax help, but should not
-replace any intellectual thought. Cite which lines were AI generated, and be sure to understand
-each line of code.
+Status: ALL SECTIONS COMPLETE (spotify_valence.qmd, November 2026)
 
 
-Part 1 (Suggested Deadline Sept 27th)
+Part 1 — Distribution Exploration [COMPLETED]
+Dataset: Kaggle Spotify songs dataset (~30,000 rows), variable = valence (musical positiveness, continuous, range 0–1)
 
-Find a dataset which contains more than 100 rows, and at least 2 continuous columns. I suggest
-using https://vincentarelbundock.github.io/Rdatasets/datasets.html.
-Spend some time finding data which you think is interesting!
-
-INFO +2 bonus points if the dataset you choose is not chosen by any other person/group
-
-Perform this stage of the report on only 1 of the two variables of interest.
-
- * Plot the distribution of this continuous random variable (i.e. it should not be binary, take
-   on a few values, or be a year/month) using 3 different visualization methods. Which do
-   you think is the most informative? Provide informative axis labels and titles.
- * Next, describe the distribution using the SOCS (Shape, Outlier, Center, Spread) framework
-   we talked about. Use Statistical terminology when possible.
+ * DONE: Three visualization methods — histogram, boxplot, violin plot (all with informative titles/labels). Histogram chosen as most informative.
+ * DONE: SOCS description completed — Shape (symmetric, unimodal, tent-shaped), Outliers (no outliers via 1.5×IQR rule), Center (mean = 0.510, median = 0.512), Spread (SD = 0.2331, IQR = 0.362)
+ * DONE: Reflection — nearly uniform/tent-shaped distribution was surprising; expected bell-shaped clustering around moderate positivity
 
 R functions that will be helpful for this stage of the project:
 
@@ -65,19 +51,27 @@ xlab("Stopping distances of cars")
  * Are you surprised by the distribution? Is there anything you are curious about?
 
 
-Exploring the Central Limit Theorem
+Exploring the Central Limit Theorem [COMPLETED]
 
 Select 1 unit at random from the population. Does it make sense to talk about a Z-score for
 this observation? Explain why or why not.
 
+- DONE: n=1 sample value = 0.2470, Z = -1.1305 (makes sense as standardizing one value from population)
+
 Select 10 units from the population at random, and average together those values. Does it
 make sense to talk about a Z-score for this average?
+
+- DONE: n=10 sample mean = 0.4794, Z = -0.4227 (makes sense using N(μ, σ/√n))
 
 Now, select 40 units from the population at random, and average together those values. What
 is the Z-score for this average? Did you observe an unusual average value?
 
+- DONE: n=40 sample mean = 0.5303, Z = 0.5348 (not unusual since |Z| < 2)
+
 Show your work via LaTeX embedded in a quarto file (a new tool in your toolbox!), or through
 equation editors.
+
+- DONE: All calculations shown with LaTeX in spotify_valence.qmd
 
 Example LaTeX:
 $$
@@ -89,7 +83,7 @@ $$
 X-bar ~ N(mu, sigma / sqrt(n))   [rendered form of the equation above]
 
 
-Creating the Distribution of Averages
+Creating the Distribution of Averages [COMPLETED]
 
 This distribution of averages is also known as a sampling distribution.
 
@@ -97,34 +91,44 @@ Using code from the lecture notes as a base, visualize the distribution of this 
 distribution. You should have 10,000 different sample averages. Be sure to save this as a vector
 to use later.
 
+- DONE: 10,000 sample means generated (n=40), saved as xbars vector
+
  * Use geom_vline() (or vline() if using base R), to mark the position of the average you
    computed above.
 
+- DONE: abline(v = 0.5303) marks Part 2 n=40 sample mean on histogram; sampling distribution closely follows normal curve consistent with CLT
 
-P-value and Hypothesis Testing (Suggested Deadline October 25th)
+
+P-value and Hypothesis Testing [COMPLETED] (Suggested Deadline October 25th)
 
 Select two random groups, one of size 30 and the other of size 35 from your population.
 
-indices_to_be_sampled <- sample(1:nrow(df), 85)
-first_group <- df[indices_to_be_sampled[1:35], ]
-# by not passing a second value after the column, it will select all of the columns
-second_group <- df[indices_to_be_sampled[36:85], ]
+- DONE: Group 1 (n=30), mean = 0.5185, SD = 0.2299; Group 2 (n=35), mean = 0.5071, SD = 0.2274
 
 Do both a non-parametric and a 2 sample t-test for the difference in means.
+
+- DONE: Welch two-sample t-test — t = 0.2015, df = 61.28, p-value = 0.841
+- DONE: Wilcoxon rank-sum test — W = 533.5, p-value = 0.9143
 
 Using statistical notation, write down the null hypotheses for the t-test, show the computation
 for the test statistic (formally written and in the code) and the code used to arrive at a
 p-value. State your decision in relation to the hypotheses and interpret this in the context of
 the problem.
 
+- DONE: H₀: μ₁ - μ₂ = 0; Hₐ: μ₁ - μ₂ ≠ 0; fail to reject H₀ (p > 0.05); 95% CI (-0.1023, 0.1252) includes zero
+
 Explain why if we only had 20 samples from one of the groups, our t-test result may not be
 appropriate.
+
+- DONE: n=20 is below standard minimum (n=30); CLT may not take full effect; data non-normal so larger n needed for CLT to enable t-test applicability
 
 Provide a rough sketch on what the non-parametric test does, and explain why it would still
 be appropriate.
 
+- DONE: Wilcoxon rank-sum explained as distribution-free alternative that does not assume normality
 
-Visualizing Relationships Between Data (Final Project Deadline Nov 20th)
+
+Visualizing Relationships Between Data [COMPLETED] (Final Project Deadline Nov 20th)
 
 Submissions up to 24 hours late will have a 10 point penalty.
 
@@ -132,16 +136,21 @@ Randomly select 40 rows of your dataset, and let the variable you have been usin
 your report be the Y-variable, and let another continuous variable from your dataset be the
 predictor.
 
-idxs <- sample(1:nrow(df), 12) # in order to extract a random subset of indices
-subset_df <- df[idxs, ] # Then select all the rows corresponding to the random indices
+- DONE: n=40 sample; Y = valence, X = danceability (highest correlation among all variables)
 
 Plot a best fitting line. Display the R output from summary(), and explain what each number
 corresponds to.
 
+- DONE: Regression equation ŷ = 0.2696 + 0.4045x; all coefficients explained (intercept, slope, SE, t-values, p-values, R², F-statistic)
+
 Display the diagnostic plots to see if there are any assumptions which are violated; describe.
+
+- DONE: All four diagnostic plots examined — residuals vs fitted, normal Q-Q, scale-location, residuals vs leverage; no serious violations detected
 
 Lastly, we are going to create a confidence interval for our correlation coefficient. Using a
 non-parametric bootstrap approach, create a 90% confidence interval.
+
+- DONE: B = 10,000 bootstrap replicates; 90% CI computed via quantile(boot_r, c(0.05, 0.95))
 
 Some example code:
 
@@ -164,3 +173,5 @@ sprintf(
 cor(df$x, df$y)
 
 Report on whether your true correlation was inside of the 90% confidence interval.
+
+- DONE: r_sample = 0.2686; ρ_population = 0.3305; reported whether population correlation falls within bootstrap CI
